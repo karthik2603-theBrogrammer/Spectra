@@ -118,8 +118,8 @@ const GraphComponent = () => {
       const existingToNode = nodes.find((n) => n.id === node.to_address);
       const existingFromNode = nodes.find((n) => n.id === node.from_address);
 
-      const colorTo = walletId === node.to_address ? "white" : "gray";
-      const colorFrom = walletId === node.from_address ? "white" : "gray";
+      const colorTo = walletId === node.to_address ? "white" : "red";
+      const colorFrom = walletId === node.from_address ? "white" : "green";
 
       if (!existingToNode) {
         nodes.push({
