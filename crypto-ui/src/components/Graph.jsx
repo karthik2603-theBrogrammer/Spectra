@@ -1,16 +1,45 @@
 import Graph from "react-graph-vis";
+import Network from "react-vis-network-graph";
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { Spinner } from "@nextui-org/react";
-import { Modal, ModalContent, ModalHeader, ModalBody, ModalFooter, Button, useDisclosure } from "@nextui-org/react";
+import binance from "/binance.png";
+import lido from "/lido.png";
+import coinbase from "/coinbase.png";
+import metamask from "/metamask.png";
+import uniswap from "/uniswap.png";
+import pepe from "/pepe.png";
+import beaverbuild from "/beaverbuild.jpg";
+import ethereum from "/ethereum.png";
+
+const imageMap = {
+  "Uniswap: Universal Router": uniswap,
+  "Pepe (PEPE)": pepe,
+  beaverbuild: beaverbuild,
+  "Metamask: Swap Router": metamask,
+  "Coinbase: Wallet": coinbase,
+  "Lido: Staking": lido,
+  "Binance: Wallet": binance,
+  defaultImage: ethereum,
+};
+import {
+  Modal,
+  ModalContent,
+  ModalHeader,
+  ModalBody,
+  ModalFooter,
+  Button,
+  useDisclosure,
+} from "@nextui-org/react";
 import { Input } from "@nextui-org/react";
-import axios from "axios"
-import { Toaster, toast } from "sonner"
-import CsvDownloadButton from 'react-json-to-csv'
+import axios from "axios";
+import { Toaster, toast } from "sonner";
+import CsvDownloadButton from "react-json-to-csv";
 
 const options = {
   layout: {
     hierarchical: false,
+    improvedLayout: false,
   },
   edges: {
     color: "white",
@@ -22,7 +51,13 @@ const options = {
     },
   },
   nodes: {
-    borderWidth: 5,
+    brokenImage: ethereum,
+    shape: "image",
+    image: "url_to_image",
+    size: 20,
+    font: {
+      color: "white",
+    },
   },
   interaction: {
     hover: true,
@@ -44,20 +79,29 @@ function randomColor() {
 
 const GraphComponent = () => {
   const [apiData, setApiData] = useState(null);
+  useEffect(() => {
+    let temp = [];
+    apiData?.forEach((node) => {
+      if (node.from_address_label || node.to_address_label) {
+        temp.push(node.to_address_label);
+        temp.push(node.from_address_label);
+      }
+    });
+    console.log(temp);
+  }, [apiData]);
+
   const [senderAddress, setSenderAddress] = useState(null);
   const [loading, setLoading] = useState(null);
   const [graphLoading, setGraphLoading] = useState(false);
 
-
-  const [modalNode, setModalNode] = useState(null)
-  const [modalDataLoading, setModalDataLoading] = useState(false)
-  const [modalData, setModalData] = useState(null)
+  const [modalNode, setModalNode] = useState(null);
+  const [modalDataLoading, setModalDataLoading] = useState(false);
+  const [modalData, setModalData] = useState(null);
 
   const { isOpen, onOpen, onClose } = useDisclosure();
   const handleOpen = (backdrop) => {
     onOpen();
-  }
-
+  };
 
   let { walletId } = useParams();
   const centralNode = "0x10D5dbc4894ebD78f980282dc94F7F4bB9864778";
@@ -113,7 +157,7 @@ const GraphComponent = () => {
   useEffect(() => {
     console.log(walletId);
     if (walletId === null) return;
-    const url = `https://onchainanalysis.vercel.app/api/eth/0x1/${walletId}/${pageSize}`;
+    const url = `https://onchainanalysis.vercel.app/api/eth/0x1/${walletId}`;
     console.log(url);
     fetch(url)
       .then((response) => response.json())
@@ -133,8 +177,14 @@ const GraphComponent = () => {
       const existingToNode = nodes.find((n) => n.id === node.to_address);
       const existingFromNode = nodes.find((n) => n.id === node.from_address);
 
-      const colorTo = walletId === node.to_address ? "white" : "red";
-      const colorFrom = walletId === node.from_address ? "white" : "green";
+      const colorTo = walletId === node.to_address ? "white" : "gray";
+      const colorFrom = walletId === node.from_address ? "white" : "gray";
+
+      const colorIncoming = "#1ff43f";
+      const colorOutgoing = "#f4231f";
+
+      const colorEdge =
+        walletId === node.from_address ? colorOutgoing : colorIncoming;
 
       if (!existingToNode) {
         nodes.push({
@@ -148,8 +198,8 @@ const GraphComponent = () => {
             ),
           title: node.to_address_label ? node.to_address_label : "",
           color: colorTo,
-          // image: "/casino-chip.png"
-          image: "https://mimi-panda.com/wp-content/uploads/2023/02/marguerite-729510_640.jpg"
+          shape: "image",
+          image: imageMap[node.to_address_label] || imageMap["defaultImage"],
         });
       }
       if (!existingFromNode) {
@@ -164,12 +214,15 @@ const GraphComponent = () => {
             ),
           title: node.from_address_label ? node.from_address_label : "",
           color: colorFrom,
+          shape: "image",
+          image: imageMap[node.from_address_label] || imageMap["defaultImage"],
         });
       }
 
       edges.push({
         from: node.from_address,
         to: node.to_address,
+        color: colorEdge,
       });
 
       setGraphLoading(false);
@@ -183,19 +236,22 @@ const GraphComponent = () => {
           if (nodes.length > 0) {
             console.log(nodes);
             handleOpen();
-            const myWalletId = nodes[0]
+            const myWalletId = nodes[0];
             setModalNode(myWalletId);
-            
-            toast.info(`You are viewing wallet ID  ${myWalletId}`);
-            axios.get(`https://onchainanalysis.vercel.app/api/crypto/${myWalletId}`)
-              .then((res) => {
-                console.log(res.data)
-                // alert(JSON.stringify(res.data))
-                setModalData(res.data)
 
-              }).catch((err) => {
-                console.log(JSON.stringify(err))
+            toast.info(`You are viewing wallet ID  ${myWalletId}`);
+            axios
+              .get(
+                `https://onchainanalysis.vercel.app/api/crypto/${myWalletId}`
+              )
+              .then((res) => {
+                console.log(res.data);
+                // alert(JSON.stringify(res.data))
+                setModalData(res.data);
               })
+              .catch((err) => {
+                console.log(JSON.stringify(err));
+              });
           }
         },
 
@@ -254,7 +310,7 @@ const GraphComponent = () => {
                 </Button>
               </div>
 
-              {apiData === null || graphLoading ? (
+              {apiData === null || loading ? (
                 <Spinner
                   label="Loading..."
                   color="default"
@@ -263,69 +319,104 @@ const GraphComponent = () => {
                 />
               ) : (
                 <div className="w-full h-full border-1 border-white">
-                  <Graph graph={graph} options={options} events={events} />
+                  <Network graph={graph} options={options} events={events} />
                 </div>
               )}
             </div>
           </p>
-          <Modal backdrop="blur" isOpen={isOpen} onClose={() => {
-            setModalData(null)
-            onClose();
-          }} className="bg-white  border-2 border-gray-400">
+          <Modal
+            backdrop="blur"
+            isOpen={isOpen}
+            onClose={() => {
+              setModalData(null);
+              onClose();
+            }}
+            className="bg-white  border-2 border-gray-400"
+          >
             <ModalContent>
               {(onClose) => (
                 <>
-                  {
-                    modalDataLoading || modalData === null ? (<div className="py-6 flex flex-col items-center justify-center">
+                  {modalDataLoading || graphLoading === null ? (
+                    <div className="py-6 flex flex-col items-center justify-center">
                       <Spinner
                         label="Loading..."
                         color="secondary"
                         labelColor="foreground"
                         className="xl text-black"
                       />
-
-                    </div>) : (<>
-
-                      <ModalHeader className="flex flex-col gap-1 text-black font-bold">{modalNode?.substring(0, 30).concat("...")}</ModalHeader>
+                    </div>
+                  ) : (
+                    <>
+                      <ModalHeader className="flex flex-col gap-1 text-black font-bold">
+                        {modalNode?.substring(0, 30).concat("...")}
+                      </ModalHeader>
                       <ModalBody className="text-black max-h-[400px] overflow-y-auto">
-                        <p>
-                          Address : {modalData?.address}
-                        </p>
-                        <p>
-                          Balance : {modalData?.balance} WEI
-                        </p>
-                        <p>
-                          Transaction Count : {modalData?.transactionCount}
-                        </p>
-                        
+                        <p>Address : {modalData?.address}</p>
+                        <p>Balance : {modalData?.balance} WEI</p>
+                        <p>Transaction Count : {modalData?.transactionCount}</p>
                       </ModalBody>
                       <ModalFooter>
-                        <Button color="danger" variant="light" onClick={() => {
-                          // modalNode
-                          onClose()
-                          navigate(`/graph/${modalNode}`);
-                        }}>
+                        <Button
+                          color="danger"
+                          variant="light"
+                          onClick={() => {
+                            // modalNode
+                            onClose();
+                            setLoading(true);
+                            setGraphLoading(true);
+
+                            if (modalNode === null) {
+                              setGraphLoading(false);
+                              setLoading(false);
+                              toast.error(`Invalid wallet address`);
+                              return;
+                            }
+                            navigate(`/graph/${modalNode}`);
+                          }}
+                        >
                           Explore
                         </Button>
-                        <Button color="danger" variant="light"  onClick={() => {
-                          axios.post("https://onchainanalysis.vercel.app/api/monitor/address", { address: senderAddress }).then((res) => {
-                            toast.info(JSON.stringify(res.data));
-                          }).catch((err) => {
-                            toast.error(`Some Error Occures, ${JSON.stringify(err)}`)
-                          })
-                        }}>
+                        <Button
+                          color="danger"
+                          variant="light"
+                          onClick={() => {
+                            axios
+                              .post(
+                                "https://onchainanalysis.vercel.app/api/monitor/address",
+                                { address: senderAddress }
+                              )
+                              .then((res) => {
+                                toast.info(JSON.stringify(res.data));
+                              })
+                              .catch((err) => {
+                                toast.error(
+                                  `Some Error Occures, ${JSON.stringify(err)}`
+                                );
+                              });
+                          }}
+                        >
                           Flag
                         </Button>
-                        <Button color="danger" variant="light" onClick={() => {
-                          axios.get("https://onchainanalysis.vercel.app/api/monitor/address/list").then((res) => {
-                            alert(JSON.stringify(res?.data?.data.list))
-                          }).catch((err) => {
-                            toast.error(`Some Error Occures, ${JSON.stringify(err)}`)
-                          })
-                        }}>
+                        <Button
+                          color="danger"
+                          variant="light"
+                          onClick={() => {
+                            axios
+                              .get(
+                                "https://onchainanalysis.vercel.app/api/monitor/address/list"
+                              )
+                              .then((res) => {
+                                alert(JSON.stringify(res?.data?.data.list));
+                              })
+                              .catch((err) => {
+                                toast.error(
+                                  `Some Error Occures, ${JSON.stringify(err)}`
+                                );
+                              });
+                          }}
+                        >
                           Monitored
                         </Button>
-
 
                         {/* {
                           apiData && (<Button color="primary" onPress={onClose} className='flex items-center justify-center'>
@@ -336,12 +427,16 @@ const GraphComponent = () => {
                           </Button>)
                         } */}
                         {apiData && (
-                          <CsvDownloadButton data={apiData} className="bg-red-500 hover:scale-90 transition " >Download</CsvDownloadButton>
+                          <CsvDownloadButton
+                            data={apiData}
+                            className="bg-red-500 hover:scale-90 transition "
+                          >
+                            Download
+                          </CsvDownloadButton>
                         )}
-
                       </ModalFooter>
-                    </>)
-                  }
+                    </>
+                  )}
                 </>
               )}
             </ModalContent>
