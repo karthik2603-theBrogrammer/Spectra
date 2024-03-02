@@ -1,45 +1,49 @@
 import Graph from "react-graph-vis";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 const options = {
   layout: {
-    hierarchical: false
+    hierarchical: false,
   },
   edges: {
-    color: "#000000"
-  }
+    color: "#000000",
+    length: 350,
+  },
 };
 
-
 function randomColor() {
-  const red = Math.floor(Math.random() * 256).toString(16).padStart(2, '0');
-  const green = Math.floor(Math.random() * 256).toString(16).padStart(2, '0');
-  const blue = Math.floor(Math.random() * 256).toString(16).padStart(2, '0');
+  const red = Math.floor(Math.random() * 256)
+    .toString(16)
+    .padStart(2, "0");
+  const green = Math.floor(Math.random() * 256)
+    .toString(16)
+    .padStart(2, "0");
+  const blue = Math.floor(Math.random() * 256)
+    .toString(16)
+    .padStart(2, "0");
   return `#${red}${green}${blue}`;
 }
 
-const App = () => {
-  const createNode = (x , y) => {
+const GraphComponent = () => {
+  const [apiData, setApiData] = useState(null);
+  const centralNode = "0x10D5dbc4894ebD78f980282dc94F7F4bB9864778";
+  const pageSize = "100";
+
+  const createNode = (x, y) => {
     const color = randomColor();
     setState(({ graph: { nodes, edges }, counter, ...rest }) => {
       const id = counter + 1;
       const from = Math.floor(Math.random() * (counter - 1)) + 1;
       return {
         graph: {
-          nodes: [
-            ...nodes,
-            { id, label: `Node ${id}`, color, x, y }
-          ],
-          edges: [
-            ...edges,
-            { from, to: id }
-          ]
+          nodes: [...nodes, { id, label: `Node ${id}`, color, x, y }],
+          edges: [...edges, { from, to: id }],
         },
         counter: id,
-        ...rest
-      }
+        ...rest,
+      };
     });
-  }
+  };
   const [state, setState] = useState({
     counter: 5,
     graph: {
@@ -48,14 +52,14 @@ const App = () => {
         { id: 2, label: "Node 2", color: "#e09c41" },
         { id: 3, label: "Node 3", color: "#e0df41" },
         { id: 4, label: "Node 4", color: "#7be041" },
-        { id: 5, label: "Node 5", color: "#41e0c9" }
+        { id: 5, label: "Node 5", color: "#41e0c9" },
       ],
       edges: [
-        { from: 1, to: 2 },
-        { from: 1, to: 3 },
+        { from: 2, to: 2 },
+        { from: 2, to: 3 },
         { from: 2, to: 4 },
-        { from: 2, to: 5 }
-      ]
+        { from: 2, to: 5 },
+      ],
     },
     events: {
       select: ({ nodes, edges }) => {
@@ -63,20 +67,71 @@ const App = () => {
         console.log(nodes);
         console.log("Selected edges:");
         console.log(edges);
-        alert("Selected node: " + nodes);
       },
       doubleClick: ({ pointer: { canvas } }) => {
         createNode(canvas.x, canvas.y);
-      }
-    }
-  })
+      },
+    },
+  });
   const { graph, events } = state;
+
+  useEffect(() => {
+    const url = `https://onchainanalysis.vercel.app/api/eth/0x1/${centralNode}/${pageSize}`;
+    fetch(url)
+      .then((response) => response.json())
+      .then((data) => {
+        setApiData(data.result);
+      });
+  }, []);
+
+  useEffect(() => {
+    if (apiData === null) return;
+    console.log(apiData);
+
+    const nodes = [];
+    const edges = [];
+
+    apiData?.forEach((node) => {
+      const isCentralNodeFrom =
+        node.from_address === centralNode.toLocaleLowerCase();
+
+      const existingToNode = nodes.find((n) => n.id === node.to_address);
+      const existingFromNode = nodes.find((n) => n.id === node.from_address);
+
+      if (!existingToNode) {
+        nodes.push({
+          id: node.to_address,
+          label: node.to_address,
+          color: randomColor(),
+        });
+      }
+      if (!existingFromNode) {
+        nodes.push({
+          id: node.from_address,
+          label: node.from_address,
+          color: randomColor(),
+        });
+      }
+
+      edges.push({
+        from: isCentralNodeFrom ? node.from_address : node.to_address,
+        to: isCentralNodeFrom ? node.to_address : node.from_address,
+      });
+    });
+
+    setState({ graph: { nodes, edges } });
+  }, [apiData]);
+
   return (
     <div>
-      <Graph graph={graph} options={options} events={events} style={{ height: "640px" }} />
+      <Graph
+        graph={graph}
+        options={options}
+        events={events}
+        style={{ height: "640px" }}
+      />
     </div>
   );
+};
 
-}
-
-export default App;
+export default GraphComponent;
