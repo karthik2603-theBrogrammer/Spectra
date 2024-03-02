@@ -133,7 +133,7 @@ const GraphComponent = () => {
 
   return (
     <div>
-      <Network
+      <Graph
         graph={graph}
         options={options}
         events={events}
