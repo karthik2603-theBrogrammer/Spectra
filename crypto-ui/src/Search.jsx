@@ -17,7 +17,7 @@ export default function Search() {
     navigate(`/graph/${search}`);
   };
   return (
-    <div className="flex flex-col items-center  h-[100vh] w-[100vw] py-4 gap-6 ">
+    <div className="flex flex-col items-center py-4 gap-6 ">
       <div className="flex flex-col md:flex-row items-center justify-center gap-10">
         <Input
           type="text"

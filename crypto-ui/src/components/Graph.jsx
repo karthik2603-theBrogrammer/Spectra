@@ -121,7 +121,6 @@ const GraphComponent = () => {
       const colorTo = walletId === node.to_address ? "white" : "gray";
       const colorFrom = walletId === node.from_address ? "white" : "gray";
 
-
       if (!existingToNode) {
         nodes.push({
           id: node.to_address,
@@ -155,7 +154,7 @@ const GraphComponent = () => {
         from: node.from_address,
         to: node.to_address,
       });
-      
+
       setGraphLoading(false);
       setLoading(false);
     });
@@ -165,8 +164,8 @@ const GraphComponent = () => {
       events: {
         doubleClick: (nodes) => {
           console.log(nodes);
-          nodes.nodes[0]!=null && setGraphLoading(true);
-          nodes.nodes[0]!=null && navigate(`/graph/${nodes.nodes[0]}`);
+          nodes.nodes[0] != null && setGraphLoading(true);
+          nodes.nodes[0] != null && navigate(`/graph/${nodes.nodes[0]}`);
         },
       },
     });
@@ -185,38 +184,51 @@ const GraphComponent = () => {
   };
 
   return (
-    <div className="flex flex-col items-center  h-[100vh] w-[100vw] gap-10 p-10">
-      <div className="flex flex-col md:flex-row items-center justify-center gap-10">
-        <Input
-          type="text"
-          color="secondary"
-          label="Address 0x12"
-          placeholder="Enter Your Sender Address:"
-          className="w-[300px]"
-          onChange={(e) => setSenderAddress(e.target.value)}
-        />
-        <Button
-          color="secondary"
-          variant="shadow"
-          isLoading={loading}
-          onClick={() => handleSubmit()}
-        >
-          Submit!
-        </Button>
-      </div>
+    <div className="h-[100vh] w-[100vw] bg-black bg-grid-white/[0.2] relative flex flex-col items-center justify-center">
+      <div
+        style={{
+          background:
+            "radial-gradient(circle at center, rgba(0,0,0,0) 0%, rgba(0,0,0,0.7) 30%, rgba(0,0,0,1) 100%)",
+        }}
+        className="absolute pointer-events-none inset-0 flex items-center justify-center [mask-image:radial-gradient(ellipse_at_center,transparent_20%,black)]"
+      ></div>
+      <div className="w-full h-full flex flex-col justify-center text-center md:justify-start items-center">
+        <p className="text-4xl sm:text-7xl font-bold relative z-20 bg-clip-text text-transparent bg-gradient-to-b from-neutral-200 to-neutral-500 py-8">
+          <div className="flex flex-col items-center  h-[100vh] w-[100vw] gap-10 p-10">
+            <div className="flex flex-col md:flex-row items-center justify-center gap-10">
+              <Input
+                type="text"
+                color="secondary"
+                label="Address 0x12"
+                placeholder="Enter Your Sender Address:"
+                className="w-[300px]"
+                onChange={(e) => setSenderAddress(e.target.value)}
+              />
+              <Button
+                color="secondary"
+                variant="shadow"
+                isLoading={loading}
+                onClick={() => handleSubmit()}
+              >
+                Submit!
+              </Button>
+            </div>
 
-      {apiData === null || graphLoading ? (
-        <Spinner
-          label="Loading..."
-          color="default"
-          labelColor="foreground"
-          className="xl"
-        />
-      ) : (
-        <div className="w-full h-full border-1 border-white">
-          <Graph graph={graph} options={options} events={events} />
-        </div>
-      )}
+            {apiData === null || graphLoading ? (
+              <Spinner
+                label="Loading..."
+                color="default"
+                labelColor="foreground"
+                className="xl"
+              />
+            ) : (
+              <div className="w-full h-full border-1 border-white">
+                <Graph graph={graph} options={options} events={events} />
+              </div>
+            )}
+          </div>
+        </p>
+      </div>
     </div>
   );
 };
