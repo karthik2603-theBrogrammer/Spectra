@@ -5,12 +5,15 @@ import { Input, Button } from "@nextui-org/react";
 
 export default function Search() {
   const [search, setSearch] = useState(null);
-
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
   const handleSubmit = () => {
-    
-    if (search === null) return;
+    setLoading(true);
+    if (search === null) {
+      setLoading(false);
+      return;
+    }
     navigate(`/graph/${search}`);
   };
   return (
@@ -27,6 +30,7 @@ export default function Search() {
         <Button
           color="secondary"
           variant="shadow"
+          isLoading={loading}
           onClick={() => handleSubmit()}
         >
           Submit!

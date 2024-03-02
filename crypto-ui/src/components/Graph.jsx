@@ -1,6 +1,7 @@
 import Graph from "react-graph-vis";
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
+import { Spinner } from "@nextui-org/react";
 
 import { Input, Button } from "@nextui-org/react";
 const options = {
@@ -15,6 +16,9 @@ const options = {
       type: "dynamic",
       roundness: 0.5,
     },
+  },
+  nodes: {
+    borderWidth: 5,
   },
   interaction: {
     hover: true,
@@ -37,6 +41,8 @@ function randomColor() {
 const GraphComponent = () => {
   const [apiData, setApiData] = useState(null);
   const [senderAddress, setSenderAddress] = useState(null);
+  const [loading, setLoading] = useState(null);
+  const [graphLoading, setGraphLoading] = useState(false);
 
   let { walletId } = useParams();
   const centralNode = "0x10D5dbc4894ebD78f980282dc94F7F4bB9864778";
@@ -93,10 +99,11 @@ const GraphComponent = () => {
     console.log(walletId);
     if (walletId === null) return;
     const url = `https://onchainanalysis.vercel.app/api/eth/0x1/${walletId}/${pageSize}`;
+    console.log(url);
     fetch(url)
       .then((response) => response.json())
       .then((data) => {
-        setApiData(data[0].result);
+        setApiData(data.result);
       });
   }, [walletId]);
 
@@ -111,6 +118,10 @@ const GraphComponent = () => {
       const existingToNode = nodes.find((n) => n.id === node.to_address);
       const existingFromNode = nodes.find((n) => n.id === node.from_address);
 
+      const colorTo = walletId === node.to_address ? "white" : "gray";
+      const colorFrom = walletId === node.from_address ? "white" : "gray";
+
+
       if (!existingToNode) {
         nodes.push({
           id: node.to_address,
@@ -121,8 +132,8 @@ const GraphComponent = () => {
               node.to_address.length - 5,
               node.to_address.length - 1
             ),
-            title: node.to_address_label ? node.to_address_label : "",
-          color: randomColor(),
+          title: node.to_address_label ? node.to_address_label : "",
+          color: colorTo,
         });
       }
       if (!existingFromNode) {
@@ -135,8 +146,8 @@ const GraphComponent = () => {
               node.from_address.length - 5,
               node.from_address.length - 1
             ),
-            title: node.from_address_label ? node.from_address_label : "",
-          color: randomColor(),
+          title: node.from_address_label ? node.from_address_label : "",
+          color: colorFrom,
         });
       }
 
@@ -144,6 +155,9 @@ const GraphComponent = () => {
         from: node.from_address,
         to: node.to_address,
       });
+      
+      setGraphLoading(false);
+      setLoading(false);
     });
 
     setState({
@@ -151,14 +165,22 @@ const GraphComponent = () => {
       events: {
         doubleClick: (nodes) => {
           console.log(nodes);
-          navigate(`/graph/${nodes.nodes[0]}`);
+          nodes.nodes[0]!=null && setGraphLoading(true);
+          nodes.nodes[0]!=null && navigate(`/graph/${nodes.nodes[0]}`);
         },
       },
     });
   }, [apiData]);
   const navigate = useNavigate();
   const handleSubmit = () => {
-    if (senderAddress === null) return;
+    setLoading(true);
+    setGraphLoading(true);
+
+    if (senderAddress === null) {
+      setGraphLoading(false);
+      setLoading(false);
+      return;
+    }
     navigate(`/graph/${senderAddress}`);
   };
 
@@ -176,21 +198,24 @@ const GraphComponent = () => {
         <Button
           color="secondary"
           variant="shadow"
+          isLoading={loading}
           onClick={() => handleSubmit()}
         >
           Submit!
         </Button>
       </div>
 
-      {apiData === null ? (
-        "Enter bro ☠️"
-      ) : (
-        <Graph
-          graph={graph}
-          options={options}
-          events={events}
-          // style={{ height: "640px" }}
+      {apiData === null || graphLoading ? (
+        <Spinner
+          label="Loading..."
+          color="default"
+          labelColor="foreground"
+          className="xl"
         />
+      ) : (
+        <div className="w-full h-full border-1 border-white">
+          <Graph graph={graph} options={options} events={events} />
+        </div>
       )}
     </div>
   );
