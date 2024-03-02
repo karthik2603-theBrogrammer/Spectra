@@ -1,6 +1,6 @@
 import Graph from "react-graph-vis";
 import { useEffect, useState } from "react";
-import Network from "react-vis-network-graph";
+import { useNavigate, useParams } from "react-router-dom";
 
 import { Input, Button } from "@nextui-org/react";
 const options = {
@@ -13,15 +13,12 @@ const options = {
     smooth: {
       enabled: true,
       type: "dynamic",
-      roundness: 0.5
+      roundness: 0.5,
     },
   },
   interaction: {
     hover: true,
   },
-  // manipulation: {
-  //   hover: true,
-  // },
 };
 
 function randomColor() {
@@ -39,16 +36,15 @@ function randomColor() {
 
 const GraphComponent = () => {
   const [apiData, setApiData] = useState(null);
-  const [senderAddress, setSenderAddress] = useState(null)
+  const [senderAddress, setSenderAddress] = useState(null);
 
-
-
+  let { walletId } = useParams();
   const centralNode = "0x10D5dbc4894ebD78f980282dc94F7F4bB9864778";
   const pageSize = "100";
 
   const createNode = (x, y) => {
     // const color = randomColor();
-    const color = "#7be041"
+    const color = "#7be041";
     setState(({ graph: { nodes, edges }, counter, ...rest }) => {
       const id = counter + 1;
       const from = Math.floor(Math.random() * (counter - 1)) + 1;
@@ -93,14 +89,16 @@ const GraphComponent = () => {
   });
   const { graph, events } = state;
 
-  // useEffect(() => {
-  //   const url = `https://onchainanalysis.vercel.app/api/eth/0x1/${centralNode}/${pageSize}`;
-  //   fetch(url)
-  //     .then((response) => response.json())
-  //     .then((data) => {
-  //       setApiData(data.result);
-  //     });
-  // }, []);
+  useEffect(() => {
+    console.log(walletId);
+    if (walletId === null) return;
+    const url = `https://onchainanalysis.vercel.app/api/eth/0x1/${walletId}/${pageSize}`;
+    fetch(url)
+      .then((response) => response.json())
+      .then((data) => {
+        setApiData(data[0].result);
+      });
+  }, [walletId]);
 
   useEffect(() => {
     if (apiData === null) return;
@@ -116,14 +114,28 @@ const GraphComponent = () => {
       if (!existingToNode) {
         nodes.push({
           id: node.to_address,
-          label: node.to_address.substring(0, 6) + "...",
+          label:
+            node.to_address.substring(0, 4) +
+            "..." +
+            node.to_address.substring(
+              node.to_address.length - 5,
+              node.to_address.length - 1
+            ),
+            title: node.to_address_label ? node.to_address_label : "",
           color: randomColor(),
         });
       }
       if (!existingFromNode) {
         nodes.push({
           id: node.from_address,
-          label: node.from_address.substring(0, 6) + "...",
+          label:
+            node.from_address.substring(0, 4) +
+            "..." +
+            node.from_address.substring(
+              node.from_address.length - 5,
+              node.from_address.length - 1
+            ),
+            title: node.from_address_label ? node.from_address_label : "",
           color: randomColor(),
         });
       }
@@ -134,22 +146,24 @@ const GraphComponent = () => {
       });
     });
 
-    setState({ graph: { nodes, edges } });
+    setState({
+      graph: { nodes, edges },
+      events: {
+        doubleClick: (nodes) => {
+          console.log(nodes);
+          navigate(`/graph/${nodes.nodes[0]}`);
+        },
+      },
+    });
   }, [apiData]);
-
+  const navigate = useNavigate();
   const handleSubmit = () => {
-    if(senderAddress === null) return
-    const url = `https://onchainanalysis.vercel.app/api/eth/0x1/${senderAddress}/${pageSize}`;
-    fetch(url)
-      .then((response) => response.json())
-      .then((data) => {
-        setApiData(data.result);
-      });
-
-  }
+    if (senderAddress === null) return;
+    navigate(`/graph/${senderAddress}`);
+  };
 
   return (
-    <div className="flex flex-col items-center  h-[100vh] w-[100vw] gap-10">
+    <div className="flex flex-col items-center  h-[100vh] w-[100vw] gap-10 p-10">
       <div className="flex flex-col md:flex-row items-center justify-center gap-10">
         <Input
           type="text"
@@ -159,21 +173,26 @@ const GraphComponent = () => {
           className="w-[300px]"
           onChange={(e) => setSenderAddress(e.target.value)}
         />
-        <Button color="secondary" variant="shadow" onClick={() => handleSubmit()}>
+        <Button
+          color="secondary"
+          variant="shadow"
+          onClick={() => handleSubmit()}
+        >
           Submit!
         </Button>
-
       </div>
 
-      {apiData === null ? "Enter bro ☠️" : <Graph
-        graph={graph}
-        options={options}
-        events={events}
-      // style={{ height: "640px" }}
-      />}
-
+      {apiData === null ? (
+        "Enter bro ☠️"
+      ) : (
+        <Graph
+          graph={graph}
+          options={options}
+          events={events}
+          // style={{ height: "640px" }}
+        />
+      )}
     </div>
-
   );
 };
 
