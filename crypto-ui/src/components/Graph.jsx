@@ -9,6 +9,11 @@ const options = {
   edges: {
     color: "#000000",
     length: 350,
+    smooth: {
+        enabled: true,
+        type: "dynamic",
+        roundness: 0.5
+      },
   },
   interaction: {
     hover: true,
