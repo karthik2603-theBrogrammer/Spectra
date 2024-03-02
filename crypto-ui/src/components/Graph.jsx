@@ -1,5 +1,6 @@
 import Graph from "react-graph-vis";
 import { useEffect, useState } from "react";
+import Network from "react-vis-network-graph";
 
 const options = {
   layout: {
@@ -8,6 +9,12 @@ const options = {
   edges: {
     color: "#000000",
     length: 350,
+  },
+  interaction: {
+    hover: true,
+  },
+  manipulation: {
+    hover: true,
   },
 };
 
@@ -92,30 +99,27 @@ const GraphComponent = () => {
     const edges = [];
 
     apiData?.forEach((node) => {
-      const isCentralNodeFrom =
-        node.from_address === centralNode.toLocaleLowerCase();
-
       const existingToNode = nodes.find((n) => n.id === node.to_address);
       const existingFromNode = nodes.find((n) => n.id === node.from_address);
 
       if (!existingToNode) {
         nodes.push({
           id: node.to_address,
-          label: node.to_address,
+          label: node.to_address.substring(0, 6)+"...",
           color: randomColor(),
         });
       }
       if (!existingFromNode) {
         nodes.push({
           id: node.from_address,
-          label: node.from_address,
+          label: node.from_address.substring(0, 6)+"...",
           color: randomColor(),
         });
       }
 
       edges.push({
-        from: isCentralNodeFrom ? node.from_address : node.to_address,
-        to: isCentralNodeFrom ? node.to_address : node.from_address,
+        from: node.from_address ,
+        to: node.to_address,
       });
     });
 
@@ -124,7 +128,7 @@ const GraphComponent = () => {
 
   return (
     <div>
-      <Graph
+      <Network
         graph={graph}
         options={options}
         events={events}

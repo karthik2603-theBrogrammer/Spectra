@@ -12,7 +12,8 @@
   "dependencies": {
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
-    "react-graph-vis": "^1.0.7"
+    "react-graph-vis": "^1.0.7",
+    "react-vis-network-graph": "^3.0.1"
   },
   "devDependencies": {
     "@types/react": "^18.2.56",
