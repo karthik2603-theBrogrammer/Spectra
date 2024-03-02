@@ -2,8 +2,12 @@ import Graph from "react-graph-vis";
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { Spinner } from "@nextui-org/react";
+import { Modal, ModalContent, ModalHeader, ModalBody, ModalFooter, Button, useDisclosure } from "@nextui-org/react";
+import { Input } from "@nextui-org/react";
+import axios from "axios"
+import { Toaster, toast } from "sonner"
+import CsvDownloadButton from 'react-json-to-csv'
 
-import { Input, Button } from "@nextui-org/react";
 const options = {
   layout: {
     hierarchical: false,
@@ -43,6 +47,17 @@ const GraphComponent = () => {
   const [senderAddress, setSenderAddress] = useState(null);
   const [loading, setLoading] = useState(null);
   const [graphLoading, setGraphLoading] = useState(false);
+
+
+  const [modalNode, setModalNode] = useState(null)
+  const [modalDataLoading, setModalDataLoading] = useState(false)
+  const [modalData, setModalData] = useState(null)
+
+  const { isOpen, onOpen, onClose } = useDisclosure();
+  const handleOpen = (backdrop) => {
+    onOpen();
+  }
+
 
   let { walletId } = useParams();
   const centralNode = "0x10D5dbc4894ebD78f980282dc94F7F4bB9864778";
@@ -133,6 +148,8 @@ const GraphComponent = () => {
             ),
           title: node.to_address_label ? node.to_address_label : "",
           color: colorTo,
+          // image: "/casino-chip.png"
+          image: "https://mimi-panda.com/wp-content/uploads/2023/02/marguerite-729510_640.jpg"
         });
       }
       if (!existingFromNode) {
@@ -162,6 +179,26 @@ const GraphComponent = () => {
     setState({
       graph: { nodes, edges },
       events: {
+        click: ({ nodes, exists }) => {
+          if (nodes.length > 0) {
+            console.log(nodes);
+            handleOpen();
+            const myWalletId = nodes[0]
+            setModalNode(myWalletId);
+            
+            toast.info(`You are viewing wallet ID  ${myWalletId}`);
+            axios.get(`https://onchainanalysis.vercel.app/api/crypto/${myWalletId}`)
+              .then((res) => {
+                console.log(res.data)
+                // alert(JSON.stringify(res.data))
+                setModalData(res.data)
+
+              }).catch((err) => {
+                console.log(JSON.stringify(err))
+              })
+          }
+        },
+
         doubleClick: (nodes) => {
           console.log(nodes);
           nodes.nodes[0] != null && setGraphLoading(true);
@@ -178,58 +215,140 @@ const GraphComponent = () => {
     if (senderAddress === null) {
       setGraphLoading(false);
       setLoading(false);
+      toast.error(`Enter a valid wallet address`);
       return;
     }
     navigate(`/graph/${senderAddress}`);
   };
 
   return (
-    <div className="h-[100vh] w-[100vw] bg-black bg-grid-white/[0.2] relative flex flex-col items-center justify-center">
-      <div
-        style={{
-          background:
-            "radial-gradient(circle at center, rgba(0,0,0,0) 0%, rgba(0,0,0,0.7) 30%, rgba(0,0,0,1) 100%)",
-        }}
-        className="absolute pointer-events-none inset-0 flex items-center justify-center [mask-image:radial-gradient(ellipse_at_center,transparent_20%,black)]"
-      ></div>
-      <div className="w-full h-full flex flex-col justify-center text-center md:justify-start items-center">
-        <p className="text-4xl sm:text-7xl font-bold relative z-20 bg-clip-text text-transparent bg-gradient-to-b from-neutral-200 to-neutral-500 py-8">
-          <div className="flex flex-col items-center  h-[100vh] w-[100vw] gap-10 p-10">
-            <div className="flex flex-col md:flex-row items-center justify-center gap-10">
-              <Input
-                type="text"
-                color="secondary"
-                label="Address 0x12"
-                placeholder="Enter Your Sender Address:"
-                className="w-[300px]"
-                onChange={(e) => setSenderAddress(e.target.value)}
-              />
-              <Button
-                color="secondary"
-                variant="shadow"
-                isLoading={loading}
-                onClick={() => handleSubmit()}
-              >
-                Submit!
-              </Button>
-            </div>
-
-            {apiData === null || graphLoading ? (
-              <Spinner
-                label="Loading..."
-                color="default"
-                labelColor="foreground"
-                className="xl"
-              />
-            ) : (
-              <div className="w-full h-full border-1 border-white">
-                <Graph graph={graph} options={options} events={events} />
+    <>
+      <Toaster />
+      <div className="h-[100vh] w-[100vw] bg-black bg-grid-white/[0.2] relative flex flex-col items-center justify-center">
+        <div
+          style={{
+            background:
+              "radial-gradient(circle at center, rgba(0,0,0,0) 0%, rgba(0,0,0,0.7) 30%, rgba(0,0,0,1) 100%)",
+          }}
+          className="absolute pointer-events-none inset-0 flex items-center justify-center [mask-image:radial-gradient(ellipse_at_center,transparent_20%,black)]"
+        ></div>
+        <div className="w-full h-full flex flex-col justify-center text-center md:justify-start items-center">
+          <p className="text-4xl sm:text-7xl font-bold relative z-20 bg-clip-text text-transparent bg-gradient-to-b from-neutral-200 to-neutral-500 py-8">
+            <div className="flex flex-col items-center  h-[100vh] w-[100vw] gap-10 p-10">
+              <div className="flex flex-col md:flex-row items-center justify-center gap-10">
+                <Input
+                  type="text"
+                  color="secondary"
+                  label="Address 0x12"
+                  placeholder="Enter Your Sender Address:"
+                  className="w-[300px]"
+                  onChange={(e) => setSenderAddress(e.target.value)}
+                />
+                <Button
+                  color="secondary"
+                  variant="shadow"
+                  isLoading={loading}
+                  onClick={() => handleSubmit()}
+                >
+                  Submit!
+                </Button>
               </div>
-            )}
-          </div>
-        </p>
+
+              {apiData === null || graphLoading ? (
+                <Spinner
+                  label="Loading..."
+                  color="default"
+                  labelColor="foreground"
+                  className="xl"
+                />
+              ) : (
+                <div className="w-full h-full border-1 border-white">
+                  <Graph graph={graph} options={options} events={events} />
+                </div>
+              )}
+            </div>
+          </p>
+          <Modal backdrop="blur" isOpen={isOpen} onClose={() => {
+            setModalData(null)
+            onClose();
+          }} className="bg-white  border-2 border-gray-400">
+            <ModalContent>
+              {(onClose) => (
+                <>
+                  {
+                    modalDataLoading || modalData === null ? (<div className="py-6 flex flex-col items-center justify-center">
+                      <Spinner
+                        label="Loading..."
+                        color="secondary"
+                        labelColor="foreground"
+                        className="xl text-black"
+                      />
+
+                    </div>) : (<>
+
+                      <ModalHeader className="flex flex-col gap-1 text-black font-bold">{modalNode?.substring(0, 30).concat("...")}</ModalHeader>
+                      <ModalBody className="text-black max-h-[400px] overflow-y-auto">
+                        <p>
+                          Address : {modalData?.address}
+                        </p>
+                        <p>
+                          Balance : {modalData?.balance} WEI
+                        </p>
+                        <p>
+                          Transaction Count : {modalData?.transactionCount}
+                        </p>
+                        
+                      </ModalBody>
+                      <ModalFooter>
+                        <Button color="danger" variant="light" onClick={() => {
+                          // modalNode
+                          onClose()
+                          navigate(`/graph/${modalNode}`);
+                        }}>
+                          Explore
+                        </Button>
+                        <Button color="danger" variant="light"  onClick={() => {
+                          axios.post("https://onchainanalysis.vercel.app/api/monitor/address", { address: senderAddress }).then((res) => {
+                            toast.info(JSON.stringify(res.data));
+                          }).catch((err) => {
+                            toast.error(`Some Error Occures, ${JSON.stringify(err)}`)
+                          })
+                        }}>
+                          Flag
+                        </Button>
+                        <Button color="danger" variant="light" onClick={() => {
+                          axios.get("https://onchainanalysis.vercel.app/api/monitor/address/list").then((res) => {
+                            alert(JSON.stringify(res?.data?.data.list))
+                          }).catch((err) => {
+                            toast.error(`Some Error Occures, ${JSON.stringify(err)}`)
+                          })
+                        }}>
+                          Monitored
+                        </Button>
+
+
+                        {/* {
+                          apiData && (<Button color="primary" onPress={onClose} className='flex items-center justify-center'>
+                            <svg class=" relative bottom-0.5 w-6 h-6 text-white dark:text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                              <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 13V4M7 14H5a1 1 0 0 0-1 1v4c0 .6.4 1 1 1h14c.6 0 1-.4 1-1v-4c0-.6-.4-1-1-1h-2m-1-5-4 5-4-5m9 8h0" />
+                            </svg>
+                            <p className="">Download</p>
+                          </Button>)
+                        } */}
+                        {apiData && (
+                          <CsvDownloadButton data={apiData} className="bg-red-500 hover:scale-90 transition " >Download</CsvDownloadButton>
+                        )}
+
+                      </ModalFooter>
+                    </>)
+                  }
+                </>
+              )}
+            </ModalContent>
+          </Modal>
+        </div>
       </div>
-    </div>
+    </>
   );
 };
 
