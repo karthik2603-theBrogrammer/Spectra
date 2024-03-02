@@ -6,7 +6,7 @@ import Search from "./Search";
 
 export default function App() {
   return (
-    <div className="h-[100vh] w-[100vw] bg-black bg-grid-white/[0.2] relative flex flex-col items-center justify-center py-16">
+    <div className=" w-[100vw] bg-black bg-grid-white/[0.2] relative flex flex-col items-center justify-center py-16">
       <div
         style={{
           background:
