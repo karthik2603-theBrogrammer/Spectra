@@ -1,11 +1,17 @@
-import React from 'react'
-import GraphComponent from './components/Graph';
+import React, { useState } from 'react'
+import { title } from '../ui/title';
+import { subtitle } from '../ui/subtitle';
+import GraphComponent from './components/Graph'
 
 export default function App() {
+  
+
   return (
-    <div>
-      App
-      <GraphComponent />  
+    <div className='flex flex-col items-center  h-[100vh] w-[100vw] py-4 gap-6 '>
+      <h1 className={`${title()} m-4`}>
+        Enter Your Sender Address Here:
+      </h1>
+      <GraphComponent />
     </div>
   )
 }
