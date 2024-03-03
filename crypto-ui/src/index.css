@@ -80,3 +80,15 @@ button:focus-visible {
 body{
   background-color: "black";
 }
+
+#webchat-root {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+#webchat-root,
+#webchat-root * {
+  outline: none;
+}
