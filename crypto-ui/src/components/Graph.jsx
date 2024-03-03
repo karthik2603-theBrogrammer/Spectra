@@ -169,7 +169,7 @@ const GraphComponent = () => {
         });
     }
     else{
-      const url = `http://localhost:8000/api/bitcoin/transactions/${walletId}`;
+      const url = `http://onchainanalysis.vercel.app/api/bitcoin/transactions/${walletId}`;
       console.log(url);
       fetch(url)
         .then((response) => response.json())
