@@ -159,7 +159,7 @@ const GraphComponent = () => {
   useEffect(() => {
     console.log(walletId);
     if (walletId === null) return;
-    if(walletId.length==13){
+    if(walletId.substring(0, 2)=="0x"){
       const url = `https://onchainanalysis.vercel.app/api/eth/0x1/${walletId}`;
       console.log(url);
       fetch(url)
@@ -190,7 +190,7 @@ const GraphComponent = () => {
       const existingToNode = nodes.find((n) => n.id === node.to_address);
       const existingFromNode = nodes.find((n) => n.id === node.from_address);
 
-      const bitcoin = walletId.length!=13?true:false
+      const bitcoin = walletId.substring(0, 2)!="0x"?true:false
 
       const colorTo = walletId === node.to_address ? "white" : "gray";
       const colorFrom = walletId === node.from_address ? "white" : "gray";
@@ -249,7 +249,7 @@ const GraphComponent = () => {
       events: {
         click: ({ nodes, exists }) => {
           if (nodes.length > 0) {
-            if(nodes[0].length>13) return;
+            if(nodes[0].substring(0,2)!="0x") return;
             console.log(nodes);
             handleOpen();
             const myWalletId = nodes[0];
