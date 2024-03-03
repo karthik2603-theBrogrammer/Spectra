@@ -18,7 +18,7 @@ const router = createBrowserRouter([
     errorElement: <ErrorPage />,
   },
   {
-    path: "search/",
+    path: "/search",
     element: <App />,
     // errorElement: <ErrorPage />,
   },
