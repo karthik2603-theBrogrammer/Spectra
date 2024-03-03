@@ -352,7 +352,7 @@ const GraphComponent = () => {
             <ModalContent>
               {(onClose) => (
                 <>
-                  {modalDataLoading || graphLoading === null ? (
+                  {modalDataLoading || modalData === null ? (
                     <div className="py-6 flex flex-col items-center justify-center">
                       <Spinner
                         label="Loading..."
