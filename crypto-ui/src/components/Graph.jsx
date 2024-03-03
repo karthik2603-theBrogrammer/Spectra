@@ -11,6 +11,7 @@ import uniswap from "/uniswap.png";
 import pepe from "/pepe.png";
 import beaverbuild from "/beaverbuild.jpg";
 import ethereum from "/ethereum.png";
+import bitcoin from "/bitcoin.png";
 
 const imageMap = {
   "Uniswap: Universal Router": uniswap,
@@ -21,6 +22,7 @@ const imageMap = {
   "Lido: Staking": lido,
   "Binance: Wallet": binance,
   defaultImage: ethereum,
+  "bitcoin" : bitcoin
 };
 import {
   Modal,
@@ -157,13 +159,24 @@ const GraphComponent = () => {
   useEffect(() => {
     console.log(walletId);
     if (walletId === null) return;
-    const url = `https://onchainanalysis.vercel.app/api/eth/0x1/${walletId}`;
-    console.log(url);
-    fetch(url)
-      .then((response) => response.json())
-      .then((data) => {
-        setApiData(data.result);
-      });
+    if(walletId.length==13){
+      const url = `https://onchainanalysis.vercel.app/api/eth/0x1/${walletId}`;
+      console.log(url);
+      fetch(url)
+        .then((response) => response.json())
+        .then((data) => {
+          setApiData(data.result);
+        });
+    }
+    else{
+      const url = `http://localhost:8000/api/bitcoin/transactions/${walletId}`;
+      console.log(url);
+      fetch(url)
+        .then((response) => response.json())
+        .then((data) => {
+          setApiData(data.result);
+        });
+    }
   }, [walletId]);
 
   useEffect(() => {
@@ -176,6 +189,8 @@ const GraphComponent = () => {
     apiData?.forEach((node) => {
       const existingToNode = nodes.find((n) => n.id === node.to_address);
       const existingFromNode = nodes.find((n) => n.id === node.from_address);
+
+      const bitcoin = walletId.length!=13?true:false
 
       const colorTo = walletId === node.to_address ? "white" : "gray";
       const colorFrom = walletId === node.from_address ? "white" : "gray";
@@ -199,7 +214,7 @@ const GraphComponent = () => {
           title: node.to_address_label ? node.to_address_label : "",
           color: colorTo,
           shape: "image",
-          image: imageMap[node.to_address_label] || imageMap["defaultImage"],
+          image: bitcoin ? imageMap["bitcoin"] : imageMap[node.to_address_label] || imageMap["defaultImage"],
         });
       }
       if (!existingFromNode) {
@@ -215,7 +230,7 @@ const GraphComponent = () => {
           title: node.from_address_label ? node.from_address_label : "",
           color: colorFrom,
           shape: "image",
-          image: imageMap[node.from_address_label] || imageMap["defaultImage"],
+          image: bitcoin ? imageMap["bitcoin"] : imageMap[node.from_address_label] || imageMap["defaultImage"],
         });
       }
 
@@ -234,6 +249,7 @@ const GraphComponent = () => {
       events: {
         click: ({ nodes, exists }) => {
           if (nodes.length > 0) {
+            if(nodes[0].length>13) return;
             console.log(nodes);
             handleOpen();
             const myWalletId = nodes[0];
