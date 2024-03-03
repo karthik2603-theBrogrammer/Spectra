@@ -12,7 +12,6 @@ import pepe from "/pepe.png";
 import beaverbuild from "/beaverbuild.jpg";
 import ethereum from "/ethereum.png";
 import bitcoin from "/bitcoin.png";
-import sythetix from "/sythetix.png";
 import walton from "/walton.png";
 import fetchai from "/fetchai.png";
 
@@ -26,7 +25,6 @@ const imageMap = {
   "Binance 7": binance,
   defaultImage: ethereum,
   bitcoin: bitcoin,
-  "Synthetix Network Token": sythetix,
   "Walton (WTC)": walton,
   "Fetch.ai: Old FET Token": fetchai,
 };
