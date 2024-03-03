@@ -1,4 +1,6 @@
 import React from 'react'
+import { Link } from 'react-router-dom';
+
 
 const LandingPageComponent = () => {
     return (
@@ -18,7 +20,7 @@ const LandingPageComponent = () => {
                 Your end-to-end cryptocurrency tracker. A descriptive currency tracker using the wallet ID. Get graphical representation, realtime monitoring of wallets, mail in case of suspicious activity and finally, export transaction csv file locally to your system.
                 </p>
                 <div className="flex flex-row gap-4 items-center justify-center">
-                    <a href={"/search"}>
+                <Link to="/search">
                         <div className="flex flex-row items-center justify-center gap-4 p-2 m-2">
                             <button className="bg-slate-800 no-underline group cursor-pointer relative shadow-2xl shadow-zinc-900 rounded-full p-px text-xs font-semibold leading-6  text-white inline-block">
                                 <span className="absolute inset-0 overflow-hidden rounded-full">
@@ -45,7 +47,7 @@ const LandingPageComponent = () => {
                                 <span className="absolute -bottom-0 left-[1.125rem] h-px w-[calc(100%-2.25rem)] bg-gradient-to-r from-emerald-400/0 via-emerald-400/90 to-emerald-400/0 transition-opacity duration-500 group-hover:opacity-40"></span>
                             </button>
                         </div>
-                    </a>
+                    </Link>
 
                     <a href="https://www.canva.com/design/DAF-aep-ar0/ZLe59HShcFDL-T-F-rLIBA/edit" className="">
                         <div className="flex flex-row items-center justify-center gap-4 p-2 m-2">
