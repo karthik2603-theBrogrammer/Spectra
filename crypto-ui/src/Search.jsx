@@ -45,7 +45,7 @@ export default function Search() {
 
         <div className="text-left flex flex-col gap-3 text-gray-400 my-7">
           <div className="justify-center">
-            <span className="text-2xl text-gray-500">#1</span> Get access to a Wallet ID you want to start exploring 
+            <span className="text-2xl text-gray-500">#1</span> Get access to a Wallet ID you want to start exploring, Ex: 0xa336033fc39a359e375007e75af49768e98d0790
           </div>
           <hr />
           <div>
