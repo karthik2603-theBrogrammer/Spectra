@@ -9,12 +9,18 @@ import {
   RouterProvider,
 } from "react-router-dom";
 import { NextUIProvider } from "@nextui-org/react";
+import LandingPageComponent from "./components/LandingPageComponent.jsx";
 
 const router = createBrowserRouter([
   {
     path: "/",
-    element: <App />,
+    element: <LandingPageComponent />,
     errorElement: <ErrorPage />,
+  },
+  {
+    path: "search/",
+    element: <App />,
+    // errorElement: <ErrorPage />,
   },
   {
     path: "graph/:walletId",
