@@ -17,6 +17,10 @@
    The bot permits scouting transactions and wallets by just conversing with it!
    Can speak in Kannada, Hindi, Telugu and various other languages.
 
+<div align="left">
+  <img width="500" alt="Screenshot 2024-03-07 at 1 00 52 PM" src="https://github.com/karthik2603-theBrogrammer/Spectra/assets/103726023/89fe1870-d6da-4d07-a858-ada6c5f49706">
+</div>
+
 ## Other Technologies Used ⚡️
 1. React.js with Vite
 2. Node.js
