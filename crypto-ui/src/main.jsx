@@ -20,7 +20,6 @@ const router = createBrowserRouter([
   {
     path: "/search",
     element: <App />,
-    // errorElement: <ErrorPage />,
   },
   {
     path: "graph/:walletId",
