@@ -392,7 +392,7 @@ const GraphComponent = () => {
                         >
                           Explore
                         </Button>
-                        <Button
+                        {/* <Button
                           color="danger"
                           variant="light"
                           onClick={() => {
@@ -412,7 +412,7 @@ const GraphComponent = () => {
                           }}
                         >
                           Flag
-                        </Button>
+                        </Button> */}
                         <Button
                           color="danger"
                           variant="light"
